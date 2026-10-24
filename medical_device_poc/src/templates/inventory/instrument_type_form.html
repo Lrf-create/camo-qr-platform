@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block page_title %}{{ form_title }}{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">维护外部软件提交明细使用的 TYPE 编码。</p>{% endblock %}
+{% block content %}
+<section class="panel form-panel">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">{{ form_title }}</h2>
+      <p class="placeholder-text">TYPE 保存时会自动转换为大写。</p>
+    </div>
+    <a href="{% url 'inventory:instrument_types' %}" class="button button-secondary">返回列表</a>
+  </div>
+  <form method="post" class="maintenance-form">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <div class="form-grid">
+      <div>
+        {{ form.type_code.label_tag }}
+        {{ form.type_code }}
+        {{ form.type_code.errors }}
+      </div>
+      <div>
+        {{ form.display_name.label_tag }}
+        {{ form.display_name }}
+        {{ form.display_name.errors }}
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit">{{ submit_label }}</button>
+      <a href="{% url 'inventory:instrument_types' %}" class="button button-secondary">取消</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

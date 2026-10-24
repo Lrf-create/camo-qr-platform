@@ -1,0 +1,59 @@
+{% load static %}
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}医用器械管理平台{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="{% if user.is_authenticated %}app-body{% else %}auth-body{% endif %}">
+  {% if user.is_authenticated %}
+    <aside class="sidebar" aria-label="主导航">
+      <div class="brand">
+        <span class="brand-title">器械管理平台</span>
+        <span class="brand-subtitle">POC</span>
+      </div>
+      <nav class="nav-list">
+        <a href="{% url 'dashboard:index' %}" class="nav-link {% if request.resolver_match.namespace == 'dashboard' and request.resolver_match.url_name == 'index' %}is-active{% endif %}">实时看板</a>
+        <a href="{% url 'workstations:port_a' %}" class="nav-link {% if request.resolver_match.namespace == 'workstations' and request.resolver_match.url_name == 'port_a' %}is-active{% endif %}">A口入库/复核</a>
+        <a href="{% url 'workstations:port_b' %}" class="nav-link {% if request.resolver_match.namespace == 'workstations' and request.resolver_match.url_name == 'port_b' %}is-active{% endif %}">B口出库</a>
+        <a href="{% url 'inventory:instrument_types' %}" class="nav-link {% if request.resolver_match.namespace == 'inventory' and request.resolver_match.url_name == 'instrument_types' %}is-active{% endif %}">器械种类</a>
+        <a href="{% url 'inventory:boxes' %}" class="nav-link {% if request.resolver_match.namespace == 'inventory' and request.resolver_match.url_name == 'boxes' %}is-active{% endif %}">器械框</a>
+        <a href="{% url 'inventory:status_query' %}" class="nav-link {% if request.resolver_match.namespace == 'inventory' and request.resolver_match.url_name == 'status_query' %}is-active{% endif %}">状态查询</a>
+        <a href="{% url 'operations:records' %}" class="nav-link {% if request.resolver_match.namespace == 'operations' %}is-active{% endif %}">操作记录</a>
+        <a href="{% url 'dashboard:system_status' %}" class="nav-link {% if request.resolver_match.namespace == 'dashboard' and request.resolver_match.url_name == 'system_status' %}is-active{% endif %}">系统状态</a>
+      </nav>
+    </aside>
+    <main class="content">
+      <header class="topbar">
+        <div>
+          <h1>{% block page_title %}{% endblock %}</h1>
+          {% block page_subtitle %}{% endblock %}
+        </div>
+        <div class="user-area">
+          <span class="user-name">{{ user.username }}</span>
+          <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="button button-secondary">退出</button>
+          </form>
+        </div>
+      </header>
+      {% if messages %}
+        <div class="message-list">
+          {% for message in messages %}
+            <div class="message message-{{ message.tags|default:'info' }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <section class="page">
+        {% block content %}{% endblock %}
+      </section>
+    </main>
+  {% else %}
+    <main class="auth-shell">
+      {% block auth_content %}{% endblock %}
+    </main>
+  {% endif %}
+</body>
+</html>

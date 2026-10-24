@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block page_title %}系统状态{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">检查数据库、自动处理器和待处理任务。</p>{% endblock %}
+{% block content %}
+<div class="workspace-grid">
+  <section class="panel">
+    <h2 class="panel-title">数据库</h2>
+    <dl class="detail-grid single-column-detail">
+      <div>
+        <dt>数据库</dt>
+        <dd>{{ database_name }}</dd>
+      </div>
+      <div>
+        <dt>主机</dt>
+        <dd>{{ database_host }}:{{ database_port }}</dd>
+      </div>
+      <div>
+        <dt>轮询间隔</dt>
+        <dd>{{ poll_interval }} 秒</dd>
+      </div>
+      <div>
+        <dt>处理模式</dt>
+        <dd><span class="status-pill status-success">随 Web 服务自动处理</span></dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="panel">
+    <h2 class="panel-title">待处理任务</h2>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <span class="stat-value">{{ port_a_ready_count }}</span>
+        <span class="stat-label">A口待处理</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ port_b_ready_count }}</span>
+        <span class="stat-label">B口待处理</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<section class="panel latest-panel">
+  <h2 class="panel-title">数据表统计</h2>
+  <div class="stat-grid system-stat-grid">
+    <div class="stat-card"><span class="stat-value">{{ instrument_type_count }}</span><span class="stat-label">器械种类</span></div>
+    <div class="stat-card"><span class="stat-value">{{ box_count }}</span><span class="stat-label">器械框</span></div>
+    <div class="stat-card"><span class="stat-value">{{ box_inventory_count }}</span><span class="stat-label">框内配置</span></div>
+    <div class="stat-card"><span class="stat-value">{{ open_circulation_count }}</span><span class="stat-label">开放流转</span></div>
+    <div class="stat-card"><span class="stat-value">{{ operation_record_count }}</span><span class="stat-label">操作记录</span></div>
+    <div class="stat-card"><span class="stat-value">{{ port_a_submission_count }}</span><span class="stat-label">A口提交</span></div>
+    <div class="stat-card"><span class="stat-value">{{ port_b_submission_count }}</span><span class="stat-label">B口提交</span></div>
+  </div>
+</section>
+
+<section class="panel latest-panel">
+  <h2 class="panel-title">操作口记录</h2>
+  {% if workstations %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>操作口</th>
+            <th>历史状态</th>
+            <th>最近启动</th>
+            <th>最近停止</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for control in workstations %}
+            <tr>
+              <td>{{ control.port }}口</td>
+              <td>{% if control.is_running %}运行中{% else %}已停止{% endif %}</td>
+              <td>{% if control.last_started_at %}{{ control.last_started_at|date:"Y-m-d H:i:s" }}{% else %}-{% endif %}</td>
+              <td>{% if control.last_stopped_at %}{{ control.last_stopped_at|date:"Y-m-d H:i:s" }}{% else %}-{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="placeholder-text empty-text">暂无操作口记录。</p>
+  {% endif %}
+</section>
+{% endblock %}

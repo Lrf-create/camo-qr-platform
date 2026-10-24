@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block page_title %}{{ form_title }}{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">维护器械框基础资料；二维码字符串由平台生成。</p>{% endblock %}
+{% block content %}
+<section class="panel form-panel">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">{{ form_title }}</h2>
+      {% if box %}
+        <p class="placeholder-text">二维码字符串：{{ box.qr_token }}</p>
+      {% else %}
+        <p class="placeholder-text">创建后会自动生成唯一二维码字符串。</p>
+      {% endif %}
+    </div>
+    <a href="{% url 'inventory:boxes' %}" class="button button-secondary">返回列表</a>
+  </div>
+  <form method="post" class="maintenance-form">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <div class="form-grid">
+      <div>
+        {{ form.box_code.label_tag }}
+        {{ form.box_code }}
+        {{ form.box_code.errors }}
+      </div>
+      <div>
+        {{ form.box_name.label_tag }}
+        {{ form.box_name }}
+        {{ form.box_name.errors }}
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit">{{ submit_label }}</button>
+      <a href="{% url 'inventory:boxes' %}" class="button button-secondary">取消</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

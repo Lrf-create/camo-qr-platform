@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block page_title %}差异报告{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">查看单次操作的提交数量与期望数量。</p>{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">记录 #{{ record.id }}</h2>
+      <p class="placeholder-text">{{ record.created_at|date:"Y-m-d H:i:s" }} · {{ record.box.box_code }} · {{ record.get_operation_type_display }}</p>
+    </div>
+    <a href="{% url 'operations:records' %}" class="button button-secondary">返回列表</a>
+  </div>
+  <dl class="detail-grid">
+    <div>
+      <dt>操作结果</dt>
+      <dd>{{ record.get_result_display }}</dd>
+    </div>
+    <div>
+      <dt>消息</dt>
+      <dd>{{ record.message|default:"-" }}</dd>
+    </div>
+    <div>
+      <dt>器械框</dt>
+      <dd>{{ record.box.box_code }}</dd>
+    </div>
+    <div>
+      <dt>流转记录</dt>
+      <dd>{% if record.circulation_id %}#{{ record.circulation_id }}{% else %}-{% endif %}</dd>
+    </div>
+  </dl>
+</section>
+
+<section class="panel latest-panel">
+  <h2 class="panel-title">器械明细</h2>
+  {% if items %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>TYPE</th>
+            <th>名称</th>
+            <th>提交数量</th>
+            <th>期望数量</th>
+            <th>差值</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+            <tr>
+              <td>{{ item.type_code_snapshot }}</td>
+              <td>{{ item.display_name_snapshot }}</td>
+              <td>{{ item.submitted_num }}</td>
+              <td>{{ item.expected_num }}</td>
+              <td>
+                {% if item.diff_num == 0 %}
+                  <span class="status-pill status-success">0</span>
+                {% else %}
+                  <span class="status-pill status-warning">{{ item.diff_num }}</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="placeholder-text empty-text">暂无器械明细。</p>
+  {% endif %}
+</section>
+{% endblock %}

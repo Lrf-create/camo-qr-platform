@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block page_title %}器械框{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">查看和维护器械框、二维码编码、状态和框内配置。</p>{% endblock %}
+{% block content %}
+<section class="panel">
+  <h2 class="panel-title">状态汇总</h2>
+  <div class="stat-grid">
+    {% for item in status_counts %}
+      <div class="stat-card">
+        <span class="stat-value">{{ item.count }}</span>
+        <span class="stat-label">{{ item.label }}</span>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="panel latest-panel">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">器械框列表</h2>
+      <p class="placeholder-text">新增器械框时平台会自动生成二维码字符串。</p>
+    </div>
+    <a href="{% url 'inventory:create_box' %}" class="button">新增器械框</a>
+  </div>
+  {% if boxes %}
+    <div class="table-wrap">
+      <table class="data-table box-table">
+        <thead>
+          <tr>
+            <th>框编号</th>
+            <th>名称</th>
+            <th>状态</th>
+            <th>流转次数</th>
+            <th>二维码字符串</th>
+            <th>框内配置</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for box in boxes %}
+            <tr>
+              <td>{{ box.box_code }}</td>
+              <td>{{ box.box_name }}</td>
+              <td>
+                {% if box.status == "IN_STOCK" %}
+                  <span class="status-pill status-success">{{ box.get_status_display }}</span>
+                {% elif box.status == "OUTBOUND" %}
+                  <span class="status-pill status-warning">{{ box.get_status_display }}</span>
+                {% else %}
+                  <span class="status-pill status-muted">{{ box.get_status_display }}</span>
+                {% endif %}
+              </td>
+              <td>{{ box.flow_count }}</td>
+              <td class="token-cell">{{ box.qr_token }}</td>
+              <td>
+                <ul class="inline-list">
+                  {% for item in box.inventory_items.all %}
+                    <li>{{ item.instrument_type.type_code }}：{{ item.expected_num }}</li>
+                  {% empty %}
+                    <li>无配置</li>
+                  {% endfor %}
+                </ul>
+              </td>
+              <td>
+                <div class="table-actions">
+                  <a href="{% url 'inventory:edit_box' box.id %}" class="table-link">编辑资料</a>
+                  <a href="{% url 'inventory:edit_box_inventory' box.id %}" class="table-link">编辑配置</a>
+                  <form method="post" action="{% url 'inventory:delete_box' box.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="link-button danger-link">删除</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="placeholder-text empty-text">暂无器械框。</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% load static %}
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>消毒供应室智能检测岛台</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="sterile-display-body" data-api-url="{% url 'dashboard:sterile_supply_latest_api' %}" data-scan-start-id="{{ scan_start_id }}">
+  <main class="sterile-display-shell" aria-label="消毒供应室智能检测岛台">
+    <header class="sterile-display-header">
+      <h1>消毒供应室智能检测岛台</h1>
+      <dl class="sterile-package-meta">
+        <div>
+          <dt>包号：</dt>
+          <dd id="sterile-package-number"></dd>
+        </div>
+        <div>
+          <dt>包名称：</dt>
+          <dd id="sterile-package-name"></dd>
+        </div>
+      </dl>
+    </header>
+
+    <section class="sterile-tables" aria-label="器械清单">
+      <div class="sterile-table-frame">
+        <table class="sterile-table" aria-label="左侧器械清单">
+          <thead>
+            <tr>
+              <th>器械名称</th>
+              <th>数量</th>
+            </tr>
+          </thead>
+          <tbody id="sterile-left-items">
+            {% for _index in "12345" %}
+              <tr><td></td><td class="sterile-quantity"></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="sterile-table-frame">
+        <table class="sterile-table" aria-label="右侧器械清单">
+          <thead>
+            <tr>
+              <th>器械名称</th>
+              <th>数量</th>
+            </tr>
+          </thead>
+          <tbody id="sterile-right-items">
+            {% for _index in "12345" %}
+              <tr><td></td><td class="sterile-quantity"></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const apiUrl = document.body.dataset.apiUrl;
+      let scanStartId = document.body.dataset.scanStartId;
+      let needsNewSession = false;
+      let polling = false;
+      let active = true;
+      const packageNumber = document.getElementById("sterile-package-number");
+      const packageName = document.getElementById("sterile-package-name");
+      const leftRows = Array.from(document.querySelectorAll("#sterile-left-items tr"));
+      const rightRows = Array.from(document.querySelectorAll("#sterile-right-items tr"));
+
+      function renderRows(rows, items) {
+        rows.forEach((row, index) => {
+          const item = items[index] || { name: "", quantity: "" };
+          row.cells[0].textContent = item.name || "";
+          row.cells[1].textContent = item.quantity === "" || item.quantity === null ? "" : item.quantity;
+        });
+      }
+
+      function clearDisplay() {
+        packageNumber.textContent = "";
+        packageName.textContent = "";
+        renderRows(leftRows, []);
+        renderRows(rightRows, []);
+      }
+
+      async function pollLatest() {
+        if (!active || polling) return;
+        polling = true;
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 3000);
+        try {
+          const url = new URL(apiUrl, window.location.origin);
+          if (needsNewSession) url.searchParams.set("cursor_only", "1");
+          else url.searchParams.set("after_id", scanStartId);
+          const response = await fetch(url, { cache: "no-store", signal: controller.signal });
+          if (!response.ok) {
+            throw new Error("display_unavailable");
+          }
+          const payload = await response.json();
+          if (!active) return;
+          if (needsNewSession) {
+            scanStartId = String(payload.scan_start_id);
+            needsNewSession = false;
+            return;
+          }
+          if (!payload.has_update) {
+            return;
+          }
+          packageNumber.textContent = payload.package_number || "";
+          packageName.textContent = payload.package_name || "";
+          renderRows(leftRows, payload.left_items || []);
+          renderRows(rightRows, payload.right_items || []);
+        } catch (_error) {
+          clearDisplay();
+          needsNewSession = true;
+        } finally {
+          window.clearTimeout(timeout);
+          polling = false;
+        }
+      }
+
+      pollLatest();
+      window.setInterval(pollLatest, 300);
+      window.addEventListener("pagehide", () => {
+        active = false;
+        clearDisplay();
+      });
+      window.addEventListener("pageshow", (event) => {
+        if (event.persisted) window.location.reload();
+      });
+    })();
+  </script>
+</body>
+</html>

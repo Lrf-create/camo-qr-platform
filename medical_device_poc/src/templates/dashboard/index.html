@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block page_title %}实时看板{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">查看库存、操作口和最近处理结果。</p>{% endblock %}
+{% block content %}
+<div class="workspace-grid">
+  <section class="panel">
+    <h2 class="panel-title">器械框状态</h2>
+    <div class="stat-grid">
+      {% for item in box_status_counts %}
+        <div class="stat-card">
+          <span class="stat-value">{{ item.count }}</span>
+          <span class="stat-label">{{ item.label }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 class="panel-title">提交状态</h2>
+    <div class="stat-grid">
+      {% for item in submission_status_counts %}
+        <div class="stat-card">
+          <span class="stat-value">{{ item.count }}</span>
+          <span class="stat-label">{{ item.label }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+<section class="panel latest-panel">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">展示页面</h2>
+      <p class="placeholder-text">打开独立全屏检测岛台页面。</p>
+    </div>
+    <a href="{% url 'dashboard:sterile_supply_display' %}" class="button" target="_blank" rel="noopener">消毒供应室智能检测岛台</a>
+  </div>
+</section>
+
+<div class="workspace-grid latest-panel">
+  <section class="panel">
+    <h2 class="panel-title">最近操作记录</h2>
+    {% if latest_records %}
+      <div class="table-wrap compact-table-wrap">
+        <table class="data-table compact-table">
+          <thead>
+            <tr>
+              <th>时间</th>
+              <th>操作</th>
+              <th>结果</th>
+              <th>器械框</th>
+              <th>明细</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for record in latest_records %}
+              <tr>
+                <td>{{ record.created_at|date:"m-d H:i:s" }}</td>
+                <td>{{ record.get_operation_type_display }}</td>
+                <td>{{ record.get_result_display }}</td>
+                <td>{{ record.box.box_code }}</td>
+                <td><a href="{% url 'operations:report_detail' record.id %}" class="table-link">查看</a></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="placeholder-text empty-text">暂无操作记录。</p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h2 class="panel-title">最近提交</h2>
+    <dl class="detail-grid single-column-detail">
+      <div>
+        <dt>A口</dt>
+        <dd>{% if latest_port_a %}{{ latest_port_a.get_status_display }} · {{ latest_port_a.result_code|default:"-" }}{% else %}暂无{% endif %}</dd>
+      </div>
+      <div>
+        <dt>B口</dt>
+        <dd>{% if latest_port_b %}{{ latest_port_b.get_status_display }} · {{ latest_port_b.result_code|default:"-" }}{% else %}暂无{% endif %}</dd>
+      </div>
+    </dl>
+  </section>
+</div>
+{% endblock %}

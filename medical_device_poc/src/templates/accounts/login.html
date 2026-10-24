@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}登录 - 医用器械管理平台{% endblock %}
+{% block auth_content %}
+<section class="auth-card">
+  <div class="auth-brand">
+    <span class="brand-title">福州大学附属省立医院消毒供应室精密器械管理平台</span>
+    <span class="brand-subtitle">POC</span>
+  </div>
+  <form method="post" class="login-form" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="form-errors">{{ form.non_field_errors }}</div>
+    {% endif %}
+    <div>
+      <label for="{{ form.username.id_for_label }}">账号</label>
+      {{ form.username }}
+    </div>
+    <div>
+      <label for="{{ form.password.id_for_label }}">密码</label>
+      {{ form.password }}
+    </div>
+    <button type="submit">登录</button>
+  </form>
+</section>
+{% endblock %}

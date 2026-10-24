@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block page_title %}器械种类{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">查看和维护外部软件使用的 TYPE 编码。</p>{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">器械种类</h2>
+      <p class="placeholder-text">TYPE 是外部软件写入提交明细表时使用的唯一英文编码。</p>
+    </div>
+    <a href="{% url 'inventory:create_instrument_type' %}" class="button">新增器械种类</a>
+  </div>
+  {% if instrument_rows %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>TYPE</th>
+            <th>名称</th>
+            <th>配置总量</th>
+            <th>涉及器械框</th>
+            <th>更新时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in instrument_rows %}
+            <tr>
+              <td>{{ row.instrument_type.type_code }}</td>
+              <td>{{ row.instrument_type.display_name }}</td>
+              <td>{{ row.total_num }}</td>
+              <td>{{ row.box_count }}</td>
+              <td>{{ row.instrument_type.updated_at|date:"Y-m-d H:i:s" }}</td>
+              <td>
+                <div class="table-actions">
+                  <a href="{% url 'inventory:edit_instrument_type' row.instrument_type.id %}" class="table-link">编辑</a>
+                  <form method="post" action="{% url 'inventory:delete_instrument_type' row.instrument_type.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="link-button danger-link">删除</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="placeholder-text empty-text">暂无器械种类。</p>
+  {% endif %}
+</section>
+{% endblock %}

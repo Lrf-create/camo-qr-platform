@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block page_title %}器械状态查询{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">按器械种类汇总在库、出库和入库待复核数量。</p>{% endblock %}
+{% block content %}
+<section class="panel">
+  <h2 class="panel-title">状态查询</h2>
+  {% if status_rows %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>TYPE</th>
+            <th>名称</th>
+            <th>在库数量</th>
+            <th>出库数量</th>
+            <th>入库待复核数量</th>
+            <th>配置总量</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in status_rows %}
+            <tr>
+              <td>{{ row.instrument_type.type_code }}</td>
+              <td>{{ row.instrument_type.display_name }}</td>
+              <td>{{ row.IN_STOCK }}</td>
+              <td>{{ row.OUTBOUND }}</td>
+              <td>{{ row.INBOUND }}</td>
+              <td>{{ row.total }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="placeholder-text empty-text">暂无状态数据。</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block page_title %}操作记录{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">查看成功操作、业务失败和差异明细。</p>{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">操作记录</h2>
+      <p class="placeholder-text">最多显示最近 100 条记录。</p>
+    </div>
+    <form method="get" class="filter-row">
+      <select name="operation_type" aria-label="操作类型">
+        <option value="">全部操作</option>
+        {% for value, label in operation_choices %}
+          <option value="{{ value }}" {% if operation_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="result" aria-label="结果">
+        <option value="">全部结果</option>
+        {% for value, label in result_choices %}
+          <option value="{{ value }}" {% if result_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit">筛选</button>
+    </form>
+  </div>
+
+  {% if records %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>时间</th>
+            <th>操作</th>
+            <th>结果</th>
+            <th>器械框</th>
+            <th>消息</th>
+            <th>差异</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for record in records %}
+            <tr>
+              <td>{{ record.created_at|date:"Y-m-d H:i:s" }}</td>
+              <td>{{ record.get_operation_type_display }}</td>
+              <td>
+                {% if record.result == "SUCCESS" %}
+                  <span class="status-pill status-success">{{ record.get_result_display }}</span>
+                {% else %}
+                  <span class="status-pill status-warning">{{ record.get_result_display }}</span>
+                {% endif %}
+              </td>
+              <td>{{ record.box.box_code }}</td>
+              <td>{{ record.message|default:"-" }}</td>
+              <td>
+                <a href="{% url 'operations:report_detail' record.id %}" class="table-link">查看明细</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="placeholder-text empty-text">暂无操作记录。</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,9 @@
+Django>=5.1,<6
+waitress>=3.0,<4
+whitenoise>=6.8,<7
+python-dotenv>=1,<2
+psycopg[binary]>=3.2,<4
+fastapi>=0.115,<1
+uvicorn>=0.30,<1
+opencv-python>=4.10,<5
+cv2-enumerate-cameras==1.4.0

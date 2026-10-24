@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">{{ subtitle }}</p>{% endblock %}
+{% block content %}
+<div class="workspace-grid">
+  <section class="panel control-panel">
+    <div class="panel-header">
+      <div>
+        <h2 class="panel-title">{{ panel_title }}</h2>
+        <p class="placeholder-text">当前模式：
+          <span class="status-pill status-success">自动处理</span>
+        </p>
+      </div>
+    </div>
+    <dl class="meta-list">
+      <div>
+        <dt>处理器启动方式</dt>
+        <dd>随 Django 网页服务自动启动</dd>
+      </div>
+      <div>
+        <dt>轮询间隔</dt>
+        <dd>由 POLL_INTERVAL_SECONDS 配置</dd>
+      </div>
+      <div>
+        <dt>提交来源</dt>
+        <dd>{{ port }}口数据库缓存表</dd>
+      </div>
+      <div>
+        <dt>处理条件</dt>
+        <dd>submission.status = READY</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="panel">
+    <h2 class="panel-title">提交状态</h2>
+    <div class="stat-grid">
+      {% for item in status_counts %}
+        <div class="stat-card">
+          <span class="stat-value">{{ item.count }}</span>
+          <span class="stat-label">{{ item.label }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+<section class="panel latest-panel">
+  <h2 class="panel-title">最近提交</h2>
+  {% if latest_submission %}
+    <dl class="detail-grid">
+      <div>
+        <dt>session_id</dt>
+        <dd>{{ latest_submission.session_id }}</dd>
+      </div>
+      <div>
+        <dt>二维码字符串</dt>
+        <dd>{{ latest_submission.qr_token_raw }}</dd>
+      </div>
+      <div>
+        <dt>状态</dt>
+        <dd>{{ latest_submission.get_status_display }}</dd>
+      </div>
+      <div>
+        <dt>结果代码</dt>
+        <dd>{{ latest_submission.result_code|default:"-" }}</dd>
+      </div>
+      <div>
+        <dt>结果消息</dt>
+        <dd>{{ latest_submission.result_message|default:"-" }}</dd>
+      </div>
+      <div>
+        <dt>创建时间</dt>
+        <dd>{{ latest_submission.created_at|date:"Y-m-d H:i:s" }}</dd>
+      </div>
+      <div>
+        <dt>READY 时间</dt>
+        <dd>{% if latest_submission.ready_at %}{{ latest_submission.ready_at|date:"Y-m-d H:i:s" }}{% else %}-{% endif %}</dd>
+      </div>
+      <div>
+        <dt>处理时间</dt>
+        <dd>{% if latest_submission.processed_at %}{{ latest_submission.processed_at|date:"Y-m-d H:i:s" }}{% else %}-{% endif %}</dd>
+      </div>
+    </dl>
+  {% else %}
+    <p class="placeholder-text">暂无提交记录。</p>
+  {% endif %}
+</section>
+{% endblock %}

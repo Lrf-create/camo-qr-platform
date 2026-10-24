@@ -1,0 +1,29 @@
+[project]
+name = "medical-device-poc"
+version = "0.1.0"
+description = "Local Django proof-of-concept platform for medical device box tracking"
+requires-python = ">=3.10"
+dependencies = [
+    "Django>=5.1,<6.0",
+    "gunicorn>=23.0,<24.0",
+    "psycopg[binary]>=3.2,<4.0",
+    "python-dotenv>=1.0,<2.0",
+    "whitenoise>=6.8,<7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0,<9.0",
+    "pytest-django>=4.9,<5.0",
+    "ruff>=0.6,<1.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+pythonpath = ["src"]
+testpaths = ["tests"]

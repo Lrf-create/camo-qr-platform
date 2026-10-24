@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block page_title %}编辑框内配置{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">{{ box.box_code }} · {{ box.get_status_display }} · 只有在库状态允许修改。</p>{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">{{ box.box_code }} 配置</h2>
+      <p class="placeholder-text">二维码字符串：{{ box.qr_token }}</p>
+    </div>
+    <a href="{% url 'inventory:boxes' %}" class="button button-secondary">返回列表</a>
+  </div>
+
+  {% if not is_editable %}
+    <div class="message message-error inventory-warning">当前器械框不是在库状态，配置不可修改。</div>
+  {% endif %}
+
+  <form method="post" class="inventory-form">
+    {% csrf_token %}
+    <div class="table-wrap">
+      <table class="data-table compact-table">
+        <thead>
+          <tr>
+            <th>TYPE</th>
+            <th>名称</th>
+            <th>数量</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+            <tr>
+              <td>{{ row.instrument_type.type_code }}</td>
+              <td>{{ row.instrument_type.display_name }}</td>
+              <td>
+                <input type="number" min="0" step="1" name="{{ row.field_name }}" value="{{ row.num }}" {% if not is_editable %}disabled{% endif %}>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="form-actions">
+      <button type="submit" {% if not is_editable %}disabled{% endif %}>保存配置</button>
+      <a href="{% url 'inventory:boxes' %}" class="button button-secondary">取消</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

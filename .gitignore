@@ -11,6 +11,8 @@ __pycache__/
 **/native/installation.json
 **/native/migration-complete.json
 **/native/*.log
+**/native/*.log.*
+**/native/kiosk-browser/
 **/native/*.pid
 **/native/*.lock
 **/native/*.request

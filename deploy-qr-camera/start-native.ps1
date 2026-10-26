@@ -1,3 +1,4 @@
+param([switch]$OpenDisplay)
 $ErrorActionPreference = 'Stop'
 $nativeRoot = Join-Path $PSScriptRoot 'native'
 $runtime = Join-Path $PSScriptRoot 'python\python.exe'
@@ -14,7 +15,20 @@ if (-not (Get-Process -Name 'CamoStudio' -ErrorAction SilentlyContinue)) {
     if ($camoApp) {
         Start-Process -FilePath 'explorer.exe' -ArgumentList ('shell:AppsFolder\' + $camoApp.AppID) -WindowStyle Hidden
     } else {
-        Write-Host 'Camo Studio was not found. Open the installed camera application manually.'
+        # Store applications may not appear in Get-StartApps immediately after login.
+        $camoPackage = Get-AppxPackage -Name 'ReincubateLtd.CamoStudio' | Select-Object -First 1
+        if ($camoPackage) {
+            $camoManifest = Get-AppxPackageManifest -Package $camoPackage.PackageFullName
+            $camoEntry = $camoManifest.Package.Applications.Application | Where-Object { $_.Executable -like '*CamoStudio.exe' } | Select-Object -First 1
+            if ($camoEntry) {
+                $camoAppId = $camoPackage.PackageFamilyName + '!' + $camoEntry.Id
+                Start-Process -FilePath 'explorer.exe' -ArgumentList ('shell:AppsFolder\' + $camoAppId) -WindowStyle Hidden
+            } else {
+                Write-Warning 'Camo Studio application entry was not found. Open Camo Studio manually.'
+            }
+        } else {
+            Write-Warning 'Camo Studio was not found. Open the installed camera application manually.'
+        }
     }
 }
 $alreadyRunning = $false
@@ -45,16 +59,23 @@ if (-not $alreadyRunning) {
     }
     Start-ScheduledTask -TaskName $nativeTaskName -ErrorAction Stop
 }
-for ($nativeAttempt = 0; $nativeAttempt -lt 30; $nativeAttempt++) {
+$servicesReady = $false
+for ($nativeAttempt = 0; $nativeAttempt -lt 90; $nativeAttempt++) {
     try {
         $webReady = Invoke-WebRequest 'http://127.0.0.1:8000/display/sterile-supply/' -UseBasicParsing -TimeoutSec 2
         $qrReady = Invoke-RestMethod 'http://127.0.0.1:8001/database/health' -TimeoutSec 2
         if ($webReady.StatusCode -eq 200 -and $qrReady.status -eq 'ok') {
-            Write-Host 'Camo platform and camera capture started locally. Docker is not required.'
-            Write-Host 'Connect your phone in Camo Studio before scanning. No webpage is opened automatically.'
-            exit 0
+            $servicesReady = $true
+            break
         }
     } catch {}
     Start-Sleep -Seconds 1
 }
-throw 'Local startup did not complete. See native\supervisor.log and native\launcher-error.log.'
+if (-not $servicesReady) { throw 'Local startup did not complete. See native\supervisor.log and native\launcher-error.log.' }
+Write-Host 'Camo platform and camera capture started locally. Docker is not required.'
+Write-Host 'Connect your phone in Camo Studio before scanning.'
+if ($OpenDisplay) {
+    & $runtime (Join-Path $nativeRoot 'kiosk.py')
+    if ($LASTEXITCODE -ne 0) { throw 'Fullscreen display failed. See native\kiosk.log.' }
+}
+exit 0
